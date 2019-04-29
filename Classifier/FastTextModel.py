@@ -7,7 +7,8 @@
 """
 import time
 import fastText.FastText as ff
-from Classifier.DataPretreatment import load_label_name_map
+import jieba
+from Classifier.DataPretreatment import load_label_name_map,load_stop_word_list
 import matplotlib.pyplot as plt
 from pylab import *
 
@@ -135,6 +136,29 @@ def load_model_to_test():
         plt.show()
 
 
+def question_classifier_test():
+    """
+    问题分类测试
+    :return:
+    """
+    # 加载停用词表
+    stop_words = load_stop_word_list("stopwords.txt")
+    label_to_name = load_label_name_map()[0]
+    classifier = ff.load_model("Model/model_w2_e24")
+    while True:
+        input_ = input("question:")
+        seg_line = jieba.cut(input_)
+        add_str = ""
+        for word in seg_line:
+            if word not in stop_words:
+                add_str += word + " "
+        predict = classifier.predict(add_str.strip(), 3)
+        print(predict)
+        for label in predict[0]:
+            print(label_to_name[label])
+
+
 if __name__ == '__main__':
-    load_model_to_test()
+    # load_model_to_test()
     # fasttext_model_train()
+    question_classifier_test()
