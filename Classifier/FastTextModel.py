@@ -6,7 +6,9 @@
 @Desc  : FastText模型训练
 """
 import time
-import fastText.FastText as ff
+import os
+# import fastText.FastText as ff
+import fasttext.FastText as ff
 import jieba
 from Classifier.DataPretreatment import load_label_name_map,load_stop_word_list
 import matplotlib.pyplot as plt
@@ -14,18 +16,22 @@ from pylab import *
 
 mpl.rcParams['font.sans-serif'] = ['SimHei']
 
+MODEL_OUTPUT_PATH = "Model"
 
 def fasttext_model_train():
     """
     fasttext模型训练
     :return:
     """
-    for i in range(5, 51):
-        for w in range(1, 3):
+    for i in range(24, 25):
+        for w in range(2, 3):
             start_time = time.time()
             classifier = ff.train_supervised("fasttext.train", epoch=i, lr=0.5, wordNgrams=w)
             print("ngram=%d,训练第%d轮，用时%s" % (w, i, time.time() - start_time))
-            classifier.save_model("Model/model_w" + str(w) + "_e" + str(i))
+            if not os.path.exists(MODEL_OUTPUT_PATH):
+                os.mkdir(MODEL_OUTPUT_PATH)
+            model_name = "model_w" + str(w) + "_e" + str(i)
+            classifier.save_model(os.path.join(MODEL_OUTPUT_PATH,model_name))
 
 
 def load_model_to_test():
@@ -42,18 +48,19 @@ def load_model_to_test():
             texts.append(line.strip().split(" , ")[1])
 
     # 加载分类模型
-    for w in range(1, 2):
+    for w in range(2,3):
         all_marco_precision = []
         all_marco_recall = []
         all_marco_f1 = []
         all_micro_precision = []
         all_micro_recall = []
         all_micro_f1 = []
-        for i in range(5, 51):
+        for i in range(24,25):
             classifier = ff.load_model("Model/model_w" + str(w) + "_e" + str(i))
             print("Model/model_w" + str(w) + "_e" + str(i))
             # 预测
             predict_labels = classifier.predict(texts)[0]
+            print(predict_labels)
             # 计算预测结果
             true_positive = 0
             false_positive = 0
@@ -159,6 +166,6 @@ def question_classifier_test():
 
 
 if __name__ == '__main__':
-    # load_model_to_test()
+    load_model_to_test()
     # fasttext_model_train()
-    question_classifier_test()
+    # question_classifier_test()
